@@ -45,9 +45,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
+                    mkdir -p /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
                     rm -R /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
+                    mkdir -p /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
                     mv ./* /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
-                    mv /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/envs/estimaciones-yntech/stage.env /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/envs/estimaciones-yntech/.env
+                    cp /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/envs/estimaciones-yntech/stage.env /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/envs/estimaciones-yntech/.env
                 '''
 
                 sh '''
