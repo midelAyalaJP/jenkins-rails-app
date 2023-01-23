@@ -49,7 +49,7 @@ pipeline {
                     rm -R /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
                     mkdir -p /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
                     mv ./* /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
-                    cp /home/midelaya/Projects/docker-server-4/envs/estimaciones-yntech/stage.env /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/envs/estimaciones-yntech/.env
+                    cp /home/midelaya/Projects/docker-server-4/envs/estimaciones-yntech/stage.env /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/.env
                 '''
 
                 sh '''
