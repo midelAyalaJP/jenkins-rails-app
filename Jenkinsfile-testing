@@ -42,7 +42,7 @@ pipeline {
                 
             }
         }
-        stage('Deploy') {
+        stage('SET FILES') {
             steps {
                 sh '''
                     mkdir -p /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
@@ -52,10 +52,22 @@ pipeline {
                     cp /home/midelaya/Projects/docker-server-4/envs/estimaciones-yntech/stage.env /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/.env
                 '''
 
-                sh '''
-                    cd /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/ && rvm-exec 3.1.2 bundle install && rails db:migrate
-                '''
+               
                 
+            }
+        }
+        stage('DEPLOY'){
+            steps{
+                sh '''
+                    docker exec -it serverrails bash
+                '''
+                sh '''
+                    docker exec -it serverrails bash
+                    cd estimaciones-yntech/ && rvm-exec 3.1.2 bundle install && rails db:migrate
+                '''
+                 sh '''
+                    exit
+                '''
             }
         }
     
