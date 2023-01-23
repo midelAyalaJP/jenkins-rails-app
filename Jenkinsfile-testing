@@ -22,8 +22,8 @@ pipeline {
         stage('Run tests') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'DB_URL_CONNECTION', variable: 'db_url')
-                    string(credentialsId: 'DB_STAGE_USERNAME', variable: 'db_username')
+                    string(credentialsId: 'DB_URL_CONNECTION', variable: 'db_url'),
+                    string(credentialsId: 'DB_STAGE_USERNAME', variable: 'db_username'),
                     string(credentialsId: 'DB_PASSWORD_STAGE', variable: 'db_password')
                     
                     ]) {
