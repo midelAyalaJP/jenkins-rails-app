@@ -21,15 +21,24 @@ pipeline {
         }
         stage('Run tests') {
             steps {
-                sh '''
+                withCredentials([
+                    string(credentialsId: 'DB_URL_CONNECTION', variable: 'db_url')
+                    string(credentialsId: 'DB_STAGE_USERNAME', variable: 'db_username')
+                    string(credentialsId: 'DB_PASSWORD_STAGE', variable: 'db_password')
                     
-                    docker run --rm -e APP_DATABASE_HOST=${DB_URL_CONNECTION} \
-                    -e APP_DATABASE_USERNAME=${DB_STAGE_USERNAME} \
-                    -e APP_DATABASE_PASSWORD=${DB_PASSWORD_STAGE} \
-                    -e APP_DATABASE_NAME_DEV=${APP_DATABASE_NAME_DEV} \
-                    -e APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST} \
-                    -e APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION} ${ARTIFACT_ID} bundle exec rspec
-                '''
+                    ]) {
+                        sh '''
+                        
+                            docker run --rm -e APP_DATABASE_HOST=${db_url} \
+                            -e APP_DATABASE_USERNAME=${db_username} \
+                            -e APP_DATABASE_PASSWORD=${db_password} \
+                            -e APP_DATABASE_NAME_DEV=${APP_DATABASE_NAME_DEV} \
+                            -e APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST} \
+                            -e APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION} ${ARTIFACT_ID} bundle exec rspec
+                        '''
+                        
+                    }
+               
                 
             }
         }
