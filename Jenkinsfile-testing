@@ -7,6 +7,8 @@ pipeline {
     }
     environment {
         ARTIFACT_ID = "estimaciones-rails:${env.BUILD_NUMBER}"
+        PROJECT_DIR = "/home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/"
+        BACKUP_DIR = "/home/midelaya/Projects/docker-server-4/backups/estimaciones-yntech/"
     }
 
     stages {
@@ -51,7 +53,15 @@ pipeline {
                 
             }
         }
-        stage('SET FILES') {
+        stage('Create backup'){
+            steps{
+                sh '''
+                    mkdir -p ${BACKUP_DIR}
+                    cp -f ./* ${BACKUP_DIR}
+                '''
+            }
+        }
+        stage('Set files') {
             steps {
                 catchError {
                     echo "catch error DONE:::::...."
