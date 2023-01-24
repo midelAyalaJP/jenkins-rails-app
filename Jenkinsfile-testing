@@ -12,6 +12,14 @@ pipeline {
     }
 
     stages {
+        stage('Create folders'){
+            steps{
+                sh '''
+                    mkdir -p ${BACKUP_DIR}
+                    mkdir -p ${PROJECT_DIR}
+                '''
+            }
+        }
         // stage('Create container for test') {
         //     steps {
         //         script {
