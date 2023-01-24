@@ -5,6 +5,5 @@ class TestCreateTestsTable < ActiveRecord::Migration[7.0]
             
             t.timestamps
         end
-        add_index :tests_table, :jti
     end
 end
