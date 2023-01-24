@@ -47,6 +47,10 @@ pipeline {
                             -e APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST} \
                             -e APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION} ${ARTIFACT_ID} bundle exec rspec
                         '''
+
+                        sh '''
+                            docker rmi ${ARTIFACT_ID}
+                        '''
                         
                     }
                
