@@ -57,7 +57,8 @@ pipeline {
             steps{
                 sh '''
                     mkdir -p ${BACKUP_DIR}
-                    cp -rf ./* ${BACKUP_DIR}
+                    chmod -R o+rwx ${BACKUP_DIR}
+                    cp -rf ./.??* ${BACKUP_DIR}
                 '''
             }
         }
@@ -96,6 +97,10 @@ pipeline {
                             APP_DATABASE_NAME_DEV=${APP_DATABASE_NAME_DEV}
                             APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST}
                             APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION}" > .env
+                    '''
+
+                    sh '''
+                        chmod 777 /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/.env
                     '''
                 }
                
