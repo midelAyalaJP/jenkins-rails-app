@@ -125,6 +125,7 @@ pipeline {
                 failure {
                     sh '''
                         docker exec serverrails bash -c ./clear-estimaciones.sh
+                        mkdir ${PROJECT_DIR}
                         cp ${BACKUP_DIR}/backup_file.zip ${PROJECT_DIR}
                         cd ${PROJECT_DIR} && unzip backup_file.zip
                     '''
