@@ -57,7 +57,7 @@ pipeline {
             steps{
                 sh '''
                     mkdir -p ${BACKUP_DIR}
-                    cp -f ./* ${BACKUP_DIR}
+                    cp -rf ./* ${BACKUP_DIR}
                 '''
             }
         }
