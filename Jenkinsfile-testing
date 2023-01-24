@@ -3,7 +3,7 @@ pipeline {
    
 
     options {
-        timeout(time: 5, unit: 'MINUTES')
+        timeout(time: 10, unit: 'MINUTES')
     }
     environment {
         ARTIFACT_ID = "estimaciones-rails:${env.BUILD_NUMBER}"
@@ -17,54 +17,55 @@ pipeline {
                 sh '''
                     mkdir -p ${BACKUP_DIR}
                     mkdir -p ${PROJECT_DIR}
+                    touch ${PROJECT_DIR}/.keep
                 '''
             }
         }
-        // stage('Create container for test') {
-        //     steps {
-        //         script {
-        //             sh'''
-        //                 docker build -t ${ARTIFACT_ID} .
-        //             '''
-        //         }
-        //     }
-        // }
-        // stage('Run tests') {
-        //     steps {
-        //         withCredentials([
-        //             string(credentialsId: 'DB_URL_CONNECTION', variable: 'db_url'),
-        //             string(credentialsId: 'DB_STAGE_USERNAME', variable: 'db_username'),
-        //             string(credentialsId: 'DB_PASSWORD_STAGE', variable: 'db_password')
+        stage('Create container for test') {
+            steps {
+                script {
+                    sh'''
+                        docker build -t ${ARTIFACT_ID} .
+                    '''
+                }
+            }
+        }
+        stage('Run tests') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'DB_URL_CONNECTION', variable: 'db_url'),
+                    string(credentialsId: 'DB_STAGE_USERNAME', variable: 'db_username'),
+                    string(credentialsId: 'DB_PASSWORD_STAGE', variable: 'db_password')
                     
-        //             ]) {
-        //                  sh '''
+                    ]) {
+                         sh '''
                         
-        //                    docker run --rm -e APP_DATABASE_HOST=${db_url} \
-        //                     -e APP_DATABASE_USERNAME=${db_username} \
-        //                     -e APP_DATABASE_PASSWORD=${db_password} \
-        //                     -e APP_DATABASE_NAME_DEV=${APP_DATABASE_NAME_DEV} \
-        //                     -e APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST} \
-        //                     -e APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION} ${ARTIFACT_ID} bin/rails db:migrate RAILS_ENV=test
-        //                 '''
-        //                 sh '''
+                           docker run --rm -e APP_DATABASE_HOST=${db_url} \
+                            -e APP_DATABASE_USERNAME=${db_username} \
+                            -e APP_DATABASE_PASSWORD=${db_password} \
+                            -e APP_DATABASE_NAME_DEV=${APP_DATABASE_NAME_DEV} \
+                            -e APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST} \
+                            -e APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION} ${ARTIFACT_ID} bin/rails db:migrate RAILS_ENV=test
+                        '''
+                        sh '''
                         
-        //                     docker run --rm -e APP_DATABASE_HOST=${db_url} \
-        //                     -e APP_DATABASE_USERNAME=${db_username} \
-        //                     -e APP_DATABASE_PASSWORD=${db_password} \
-        //                     -e APP_DATABASE_NAME_DEV=${APP_DATABASE_NAME_DEV} \
-        //                     -e APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST} \
-        //                     -e APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION} ${ARTIFACT_ID} bundle exec rspec
-        //                 '''
+                            docker run --rm -e APP_DATABASE_HOST=${db_url} \
+                            -e APP_DATABASE_USERNAME=${db_username} \
+                            -e APP_DATABASE_PASSWORD=${db_password} \
+                            -e APP_DATABASE_NAME_DEV=${APP_DATABASE_NAME_DEV} \
+                            -e APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST} \
+                            -e APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION} ${ARTIFACT_ID} bundle exec rspec
+                        '''
 
-        //                 sh '''
-        //                     docker rmi ${ARTIFACT_ID}
-        //                 '''
+                        sh '''
+                            docker rmi ${ARTIFACT_ID}
+                        '''
                         
-        //             }
+                    }
                
                 
-        //     }
-        // }
+            }
+        }
         stage('Create backup'){
             steps{
                 sh '''
@@ -85,7 +86,7 @@ pipeline {
         stage('Set files') {
             steps {
                 catchError {
-                    echo "catch error DONE:::::...."
+                    echo "Error set files"
                 }
                 withCredentials([
                     string(credentialsId: 'DB_URL_CONNECTION', variable: 'db_url'),
@@ -97,13 +98,13 @@ pipeline {
                     
 
                     sh '''
-                        mkdir /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
-                        mv -f ./* /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
+                        mkdir ${PROJECT_DIR}
+                        mv -f ./* ${PROJECT_DIR}
                         
                     '''
 
                     sh '''
-                        cd /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/ && echo "
+                        cd ${PROJECT_DIR} && echo "
                             #DEVISE
                             DEVISE_JWT_SECRET_KEY=c8c4c4fceaab612e922a723136e7fab6fe43be5b040d4ae351099521532c458e07b164a659d8ee419e46ed0219fb952136a80bd139e54f7b7cf40a34ac85b393
 
@@ -118,7 +119,7 @@ pipeline {
                     '''
 
                     sh '''
-                        chmoddd 777 /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/.env
+                        chmod 777 -R ${PROJECT_DIR}
                     '''
                 }
                
@@ -140,8 +141,11 @@ pipeline {
                 }
             }
         }
-        stage('DEPLOY'){
+        stage('Deploy'){
             steps{
+                catchError {
+                    echo "catch error DEPLOY:::::...."
+                }
                 sh '''
                     docker exec serverrails bash -c ./deploy-stage.sh
                 '''
@@ -149,6 +153,19 @@ pipeline {
                  sh '''
                     exit
                 '''
+            }
+             post {
+                success {
+                    echo 'POST SUCCESS::....'
+                }
+                failure {
+                    sh '''
+                        docker exec serverrails bash -c ./clear-estimaciones.sh
+                        mkdir ${PROJECT_DIR}
+                        cp ${BACKUP_DIR}/backup_file.zip ${PROJECT_DIR}
+                        cd ${PROJECT_DIR} && unzip backup_file.zip
+                    '''
+                }
             }
         }
     
