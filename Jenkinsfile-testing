@@ -62,10 +62,17 @@ pipeline {
                 sh '''
                     mkdir -p ${BACKUP_DIR}
                     chmod -R o+rwx ${BACKUP_DIR}
-                    cp -rf ./.??* ${BACKUP_DIR}
+                    (cd ${PROJECT_DIR} && zip -r -q - .) >${BACKUP_DIR}/backup_file.zip
+                    chmod 777 ${BACKUP_DIR}/backup_file.zip
                 '''
             }
         }
+        stage('Clear deploy folder')
+            steps{
+                sh '''
+                    docker exec serverrails bash -c ./clear-estimaciones.sh
+                '''
+            }
         stage('Set files') {
             steps {
                 catchError {
@@ -78,9 +85,7 @@ pipeline {
                     
                     ]) {
 
-                    sh '''
-                        docker exec serverrails bas -c ./clear-estimaciones.sh
-                    '''
+                    
 
                     sh '''
                         mkdir /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
@@ -104,7 +109,7 @@ pipeline {
                     '''
 
                     sh '''
-                        chmod 777 /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/.env
+                        chmoddd 777 /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/.env
                     '''
                 }
                
@@ -117,7 +122,11 @@ pipeline {
                     echo 'POST SUCCESS::....'
                 }
                 failure {
-                    echo 'failed :........'
+                    sh '''
+                        docker exec serverrails bash -c ./clear-estimaciones.sh
+                        cp ${BACKUP_DIR}/backup_file.zip ${PROJECT_DIR}
+                        cd ${PROJECT_DIR} && unzip backup_file.zip
+                    '''
                 }
             }
         }
