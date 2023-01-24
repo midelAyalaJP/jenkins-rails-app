@@ -67,12 +67,13 @@ pipeline {
                 '''
             }
         }
-        stage('Clear deploy folder')
+        stage('Clear deploy folder'){
             steps{
                 sh '''
                     docker exec serverrails bash -c ./clear-estimaciones.sh
                 '''
             }
+        }
         stage('Set files') {
             steps {
                 catchError {
