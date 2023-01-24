@@ -44,26 +44,39 @@ pipeline {
         }
         stage('SET FILES') {
             steps {
-                sh '''
+                withCredentials([
+                    string(credentialsId: 'DB_URL_CONNECTION', variable: 'db_url'),
+                    string(credentialsId: 'DB_STAGE_USERNAME', variable: 'db_username'),
+                    string(credentialsId: 'DB_PASSWORD_STAGE', variable: 'db_password')
                     
-                    mv -f ./* /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
-                    cp /home/midelaya/Projects/docker-server-4/envs/estimaciones-yntech/stage.env /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/.env
-                '''
+                    ]) {
 
-                sh '''
-                    cd /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/ && echo "
-                        #DEVISE
-                        DEVISE_JWT_SECRET_KEY=c8c4c4fceaab612e922a723136e7fab6fe43be5b040d4ae351099521532c458e07b164a659d8ee419e46ed0219fb952136a80bd139e54f7b7cf40a34ac85b393
+                    sh '''
+                        docker exec serverrails bash -c ./clear-estimaciones.sh
+                    '''
+
+                    sh '''
+                        mkdir /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
+                        mv -f ./* /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/
+                        
+                    '''
+
+                    sh '''
+                        cd /home/midelaya/Projects/docker-server-4/apps/estimaciones-yntech/ && echo "
+                            #DEVISE
+                            DEVISE_JWT_SECRET_KEY=c8c4c4fceaab612e922a723136e7fab6fe43be5b040d4ae351099521532c458e07b164a659d8ee419e46ed0219fb952136a80bd139e54f7b7cf40a34ac85b393
 
 
-                        #DATABASE
-                        APP_DATABASE_HOST=${db_url}
-                        APP_DATABASE_USERNAME=${db_username}
-                        APP_DATABASE_PASSWORD=${db_password}
-                        APP_DATABASE_NAME_DEV=${APP_DATABASE_NAME_DEV}
-                        APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST}
-                        APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION}" > .env
-                '''
+                            #DATABASE
+                            APP_DATABASE_HOST=${db_url}
+                            APP_DATABASE_USERNAME=${db_username}
+                            APP_DATABASE_PASSWORD=${db_password}
+                            APP_DATABASE_NAME_DEV=${APP_DATABASE_NAME_DEV}
+                            APP_DATABASE_NAME_TEST=${APP_DATABASE_NAME_TEST}
+                            APP_DATABASE_NAME_PRODUCTION=${APP_DATABASE_NAME_PRODUCTION}" > .env
+                    '''
+                    }
+               
 
                
                 
